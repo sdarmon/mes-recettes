@@ -7,15 +7,20 @@
 </button>
 
 <script>
-  let wakeLock = null;
-  const btn = document.getElementById("wake-lock-btn");
+  let wakeLock: any = null; // On autorise n'importe quel type pour le sentinel
+  const btn = document.getElementById('wake-lock-btn') as HTMLButtonElement | null;
 
   const requestWakeLock = async () => {
     try {
-      wakeLock = await navigator.wakeLock.request("screen");
-      btn.textContent = "🔥 Mode Cuisine Actif";
-      btn.classList.add("active");
-    } catch (err) {
+      if ('wakeLock' in navigator) {
+        wakeLock = await (navigator as any).wakeLock.request('screen');
+        if (btn) {
+          btn.textContent = "🔥 Mode Cuisine Actif";
+          btn.classList.add('active');
+        }
+      }
+    } catch (err: any) {
+      // On précise que err est de type any pour accéder à .name et .message
       console.error(`Erreur Wake Lock: ${err.name}, ${err.message}`);
     }
   };
@@ -24,14 +29,16 @@
     if (wakeLock !== null) {
       wakeLock.release().then(() => {
         wakeLock = null;
-        btn.textContent = "🍳 Activer le Mode Cuisine";
-        btn.classList.remove("active");
+        if (btn) {
+          btn.textContent = "🍳 Activer le Mode Cuisine";
+          btn.classList.remove('active');
+        }
       });
     }
   };
 
-  if (btn && "wakeLock" in navigator) {
-    btn.addEventListener("click", () => {
+  if (btn && 'wakeLock' in navigator) {
+    btn.addEventListener('click', () => {
       if (wakeLock === null) {
         requestWakeLock();
       } else {
@@ -39,8 +46,7 @@
       }
     });
   } else if (btn) {
-    // Le navigateur ne supporte pas la fonctionnalité (ex: très vieil iPhone)
-    btn.style.display = "none";
+    btn.style.display = 'none';
   }
 </script>
 

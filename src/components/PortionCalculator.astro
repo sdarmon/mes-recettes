@@ -19,35 +19,30 @@ const { initialServings , label = "Personnes"} = Astro.props;
 </div>
 
 <script>
-  // Ce script s'exécutera sur la page
-  const input = document.getElementById("servings-input");
-  const initialServings = input ? parseFloat(input.dataset.initial) : 1;
+  // On précise que l'élément est un HTMLInputElement pour accéder à .value
+  const input = document.getElementById('servings-input') as HTMLInputElement | null;
+  // On utilise une valeur par défaut au cas où le dataset est vide
+  const initialServings = input ? parseFloat(input.dataset.initial || "1") : 1;
 
   if (input) {
-    input.addEventListener("input", e => {
-      const newServings = parseFloat(e.target.value) || 1;
+    input.addEventListener('input', (e) => {
+      // On s'assure que la cible du clic est bien notre input
+      const target = e.target as HTMLInputElement;
+      const newServings = parseFloat(target.value) || 1;
       const ratio = newServings / initialServings;
 
-      // On cherche tous les ingrédients de la page qui ont la classe 'qty'
-      document.querySelectorAll(".qty").forEach(el => {
-        const baseQty = parseFloat(el.dataset.base);
+      // On précise que el est un HTMLElement pour accéder à .dataset
+      document.querySelectorAll('.qty').forEach(el => {
+        const htmlEl = el as HTMLElement;
+        const baseQty = parseFloat(htmlEl.dataset.base || "0");
+
         if (baseQty) {
-          // Formate pour éviter les nombres à rallonge (ex: 3.333333)
-          let result = baseQty * ratio;
-          result = result % 1 !== 0 ? result.toFixed(1) : result;
-          el.textContent = result;
+          let result: string | number = baseQty * ratio;
+          // On s'assure que le résultat devient une chaîne de caractères pour textContent
+          result = result % 1 !== 0 ? result.toFixed(1) : result.toString();
+          htmlEl.textContent = result;
         }
       });
     });
   }
 </script>
-
-<style>
-  .calculator-box {
-    margin: 0;
-    padding: 12px;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-  }
-</style>
