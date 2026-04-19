@@ -14,6 +14,8 @@ import { slugifyStr } from "@/utils/slugify";
 import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg";
 import IconChevronRight from "@/assets/icons/IconChevronRight.svg";
 import { SITE } from "@/config";
+import PortionCalculator from "@/components/PortionCalculator.astro";
+import WakeLock from "@/components/WakeLock.astro";
 
 type Props = {
   post: CollectionEntry<"blog">;
@@ -33,6 +35,7 @@ const {
   timezone,
   tags,
   hideEditPost,
+  personnes,
 } = post.data;
 
 const { Content } = await render(post);
@@ -107,6 +110,21 @@ const nextPost =
       >
       <EditPost {hideEditPost} {post} class="max-sm:hidden" />
     </div>
+
+    {personnes && (
+      <div class="flex flex-col sm:flex-row gap-4 items-center mb-8 mt-8 no-print">
+        <div class="w-full sm:w-auto flex-1">
+          <PortionCalculator
+            initialServings={personnes}
+            label={post.data.unite}
+          />
+        </div>
+        <div class="w-full sm:w-auto flex-1">
+          <WakeLock />
+        </div>
+      </div>
+    )}
+
     <article
       id="article"
       class="app-prose mt-8 w-full max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)"
@@ -138,7 +156,7 @@ const nextPost =
           >
             <IconChevronLeft class="inline-block flex-none rtl:rotate-180" />
             <div>
-              <span>Previous Post</span>
+              <span>Précédente recette</span>
               <div class="text-sm text-accent/85">{prevPost.title}</div>
             </div>
           </a>
@@ -151,7 +169,7 @@ const nextPost =
             class="flex w-full justify-end gap-1 text-end hover:opacity-75 sm:col-start-2"
           >
             <div>
-              <span>Next Post</span>
+              <span>Recette suivante</span>
               <div class="text-sm text-accent/85">{nextPost.title}</div>
             </div>
             <IconChevronRight class="inline-block flex-none rtl:rotate-180" />

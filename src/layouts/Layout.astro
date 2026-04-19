@@ -4,7 +4,8 @@ import { ClientRouter } from "astro:transitions";
 import { PUBLIC_GOOGLE_SITE_VERIFICATION } from "astro:env/client";
 import { SITE } from "@/config";
 import "@/styles/global.css";
-
+import '@fontsource/exo-2/400.css';
+import '@fontsource/exo-2/700.css';
 type Props = {
   title?: string;
   author?: string;
@@ -61,12 +62,7 @@ const structuredData = {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
-
-    <!-- Load Font -->
-    <Font
-      cssVariable="--font-google-sans-code"
-      preload={[{ subset: "latin", weight: 400, style: "normal" }]}
-    />
+    
 
     <!-- General Meta Tags -->
     <title>{title}</title>

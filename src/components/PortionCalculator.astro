@@ -1,0 +1,53 @@
+---
+export interface Props {
+  initialServings: number;
+  label?: string;
+}
+const { initialServings , label = "Personnes"} = Astro.props;
+---
+
+<div class="calculator-box">
+  <label for="servings-input">Nombre de {label} : </label>
+  <input
+    type="number"
+    id="servings-input"
+    value={initialServings}
+    min="1"
+    max="50"
+    data-initial={initialServings}
+  />
+</div>
+
+<script>
+  // Ce script s'exécutera sur la page
+  const input = document.getElementById("servings-input");
+  const initialServings = input ? parseFloat(input.dataset.initial) : 1;
+
+  if (input) {
+    input.addEventListener("input", e => {
+      const newServings = parseFloat(e.target.value) || 1;
+      const ratio = newServings / initialServings;
+
+      // On cherche tous les ingrédients de la page qui ont la classe 'qty'
+      document.querySelectorAll(".qty").forEach(el => {
+        const baseQty = parseFloat(el.dataset.base);
+        if (baseQty) {
+          // Formate pour éviter les nombres à rallonge (ex: 3.333333)
+          let result = baseQty * ratio;
+          result = result % 1 !== 0 ? result.toFixed(1) : result;
+          el.textContent = result;
+        }
+      });
+    });
+  }
+</script>
+
+<style>
+  .calculator-box {
+    margin: 0;
+    padding: 12px;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+  }
+</style>

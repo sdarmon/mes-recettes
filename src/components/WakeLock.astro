@@ -1,0 +1,66 @@
+---
+
+---
+
+<button id="wake-lock-btn" class="wake-btn">
+  🍳 Mode Cuisine (Écran allumé)
+</button>
+
+<script>
+  let wakeLock = null;
+  const btn = document.getElementById("wake-lock-btn");
+
+  const requestWakeLock = async () => {
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      btn.textContent = "🔥 Mode Cuisine Actif";
+      btn.classList.add("active");
+    } catch (err) {
+      console.error(`Erreur Wake Lock: ${err.name}, ${err.message}`);
+    }
+  };
+
+  const releaseWakeLock = () => {
+    if (wakeLock !== null) {
+      wakeLock.release().then(() => {
+        wakeLock = null;
+        btn.textContent = "🍳 Activer le Mode Cuisine";
+        btn.classList.remove("active");
+      });
+    }
+  };
+
+  if (btn && "wakeLock" in navigator) {
+    btn.addEventListener("click", () => {
+      if (wakeLock === null) {
+        requestWakeLock();
+      } else {
+        releaseWakeLock();
+      }
+    });
+  } else if (btn) {
+    // Le navigateur ne supporte pas la fonctionnalité (ex: très vieil iPhone)
+    btn.style.display = "none";
+  }
+</script>
+
+<style>
+  .wake-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 0rem;
+    background: rgb(0 0 0 / 0, 05);
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.3s;
+  }
+  .wake-btn.active {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+  }
+</style>
