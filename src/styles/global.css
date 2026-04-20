@@ -19,7 +19,7 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
   /* Ton noir froid officiel */
-  --background: #141717;
+  --background: #1a2417;
   /* Un blanc bleuté/glacé pour une lecture parfaite sans éblouissement */
   --foreground: #f0f4f4;
   /* Ton vert électrique #95ec38 */
