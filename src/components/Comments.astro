@@ -1,0 +1,64 @@
+---
+// src/components/Comments.astro
+const { title, id, url } = Astro.props;
+---
+
+<div class="mt-16 pb-12"> <!-- Un peu de marge en bas pour respirer -->
+  <h2 class="text-xl font-bold mb-6 text-accent">Commentaire et suggestions</h2>
+  <p class="mb-8 italic opacity-70 text-sm">
+    Une question sur une recette ou envie de laisser un petit mot ? Le formulaire ci-dessous est là pour ça ! (Pas besoin de compte, votre email reste privé).
+  </p>
+  <div
+    id="cusdis_thread"
+    data-host="https://cusdis.com"
+    data-app-id="cd8a6933-ca1f-4aed-8837-e69662d0177e"
+    data-page-id={id}
+    data-page-url={"https://recette.sashadarmon.fr/about/"}
+    data-page-title={"Livre d'or"}
+    data-theme="dark"
+    style="height: 1000px;  width: 100%; border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;"
+  >
+  </div>
+
+  <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+</div>
+
+<style>
+  /* On cible le conteneur */
+  #cusdis_thread {
+    width: 100%;
+    min-height: 1000px; /* On donne de la place dès le début */
+    margin-bottom: 2rem;
+  }
+
+  /* On force l'iframe qui sera générée à l'intérieur */
+  #cusdis_thread :global(iframe) {
+    width: 100% !important;
+    min-height: 1000px !important; /* Force la hauteur du formulaire */
+    border: none !important;
+  }
+</style>
+
+<script is:inline>
+  // Petite fonction pour synchroniser le thème de Cusdis avec ton site
+  function syncCusdisTheme() {
+    const theme = document.documentElement.getAttribute("data-theme");
+    const iframe = document.querySelector("#cusdis_thread iframe");
+    if (iframe) {
+      iframe.contentWindow.postMessage(
+        JSON.stringify({
+          type: "setTheme",
+          theme: theme, // envoie 'light' ou 'dark'
+        }),
+        "*"
+      );
+    }
+  }
+
+  // On surveille le changement de thème sur ton site
+  const observer = new MutationObserver(syncCusdisTheme);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+</script>
