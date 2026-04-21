@@ -56,29 +56,3 @@ const { initialServings, label = "Personnes", v } = Astro.props;
   }
 </style>
 
-<script>
-  const input = document.getElementById(
-    "servings-input"
-  ) as HTMLInputElement | null;
-  const initialServings = input ? parseFloat(input.dataset.initial || "1") : 1;
-
-  if (input) {
-    input.addEventListener("input", e => {
-      const target = e.target as HTMLInputElement;
-      const newServings = parseFloat(target.value) || 1;
-      const ratio = newServings / initialServings;
-
-      document.querySelectorAll(".qty").forEach(el => {
-        const htmlEl = el as HTMLElement;
-        const baseQty = parseFloat(htmlEl.dataset.base || "0");
-
-        if (baseQty) {
-          let result: string | number = baseQty * ratio;
-          // Formate le nombre (max 1 chiffre après la virgule si besoin)
-          result = result % 1 !== 0 ? result.toFixed(1) : result.toString();
-          htmlEl.textContent = result;
-        }
-      });
-    });
-  }
-</script>

@@ -15,6 +15,7 @@ import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg";
 import IconChevronRight from "@/assets/icons/IconChevronRight.svg";
 import { SITE } from "@/config";
 import C from "@/components/PortionCalculator.astro";
+import PizzaCalculator from "@/components/PizzaCalculator.astro";
 import WakeLock from "@/components/WakeLock.astro";
 
 type Props = {
@@ -129,7 +130,7 @@ const nextPost =
       id="article"
       class="app-prose mt-8 w-full max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)"
     >
-      <Content components={{ C }} />
+      <Content components={{ C, PizzaCalculator }} />
     </article>
 
     <hr class="my-8 border-dashed" />
@@ -300,4 +301,68 @@ const nextPost =
   document.addEventListener("astro:after-swap", () =>
     window.scrollTo({ left: 0, top: 0, behavior: "instant" })
   );
+</script>
+<script is:inline data-astro-rerun>
+  // Cette fonction sera renégociée à chaque changement de page
+  function setupRecipeLogic() {
+    const servingsInput = document.getElementById("servings-input");
+    const pizSizeSelect = document.getElementById("piz-size");
+    const pizCountInput = document.getElementById("piz-count");
+
+    // On ne fait rien si le calculateur de portions n'est pas sur la page
+    if (!servingsInput) return;
+
+    const initialValue = parseFloat(servingsInput.dataset.initial || "1");
+
+    // --- FONCTION : MISE À JOUR VISUELLE DES INGRÉDIENTS ---
+    const refreshIngredients = () => {
+      const currentVal = parseFloat(servingsInput.value) || 0;
+      const ratio = currentVal / initialValue;
+
+      document.querySelectorAll(".qty").forEach(el => {
+        const baseQty = parseFloat(el.dataset.base || "0");
+        if (baseQty) {
+          let result = baseQty * ratio;
+          // Formatage intelligent : 1 décimale si besoin, sinon entier
+          el.textContent = result % 1 !== 0 ? result.toFixed(1) : result.toString();
+        }
+      });
+    };
+
+    // --- LOGIQUE PIZZA ---
+    if (pizSizeSelect && pizCountInput) {
+
+      // A. Quand on change le nombre de pizzas ou la taille
+      const syncPizzaToGrammes = () => {
+        const count = parseFloat(pizCountInput.value) || 0;
+        const weightPerPiz = parseFloat(pizSizeSelect.value);
+        servingsInput.value = Math.round(count * weightPerPiz).toString();
+        refreshIngredients(); // On met à jour les ingrédients DIRECTEMENT
+      };
+
+      // B. Quand on change manuellement les grammes dans le header
+      const syncGrammesToPizza = () => {
+        const grammes = parseFloat(servingsInput.value) || 0;
+        const weightPerPiz = parseFloat(pizSizeSelect.value);
+        const count = grammes / weightPerPiz;
+        pizCountInput.value = count % 1 !== 0 ? count.toFixed(1) : count.toString();
+        refreshIngredients();
+      };
+
+      // Écouteurs pour la pizza
+      pizSizeSelect.addEventListener("change", syncGrammesToPizza); // Taille change = grammes restent, nb pizza s'adapte
+      pizCountInput.addEventListener("input", syncPizzaToGrammes);  // Nb pizza change = grammes s'adaptent
+      servingsInput.addEventListener("input", syncGrammesToPizza); // Grammes changent = nb pizza s'adapte
+
+      // Init au chargement de la page pizza
+      syncGrammesToPizza();
+
+    } else {
+      // --- LOGIQUE HORS PIZZA (Gâteaux, etc.) ---
+      servingsInput.addEventListener("input", refreshIngredients);
+    }
+  }
+
+  // Lancement automatique compatible avec les transitions Astro
+  document.addEventListener("astro:page-load", setupRecipeLogic);
 </script>
