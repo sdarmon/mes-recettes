@@ -1,64 +1,69 @@
 ---
-// src/components/Comments.astro
-const { title, id, url } = Astro.props;
 ---
 
-<div class="mt-16 pb-12"> <!-- Un peu de marge en bas pour respirer -->
-  <h2 class="text-xl font-bold mb-6 text-accent">Commentaire et suggestions</h2>
-  <p class="mb-8 italic opacity-70 text-sm">
-    Une question sur une recette ou envie de laisser un petit mot ? Le formulaire ci-dessous est là pour ça ! (Pas besoin de compte, votre email reste privé).
-  </p>
-  <div
-    id="cusdis_thread"
-    data-host="https://cusdis.com"
-    data-app-id="cd8a6933-ca1f-4aed-8837-e69662d0177e"
-    data-page-id={id}
-    data-page-url={"https://recette.sashadarmon.fr/about/"}
-    data-page-title={"Livre d'or"}
-    data-theme="dark"
-    style="height: 1000px;  width: 100%; border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;"
-  >
-  </div>
+<div class="mt-16 w-full max-w-3xl mx-auto border-t border-border pt-12 no-print">
+  <h2 class="text-2xl font-bold mb-8 text-accent">Livre d'or & Questions</h2>
 
-  <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+  <!-- Le conteneur où Waline va s'afficher -->
+  <div id="waline"></div>
 </div>
 
-<style>
-  /* On cible le conteneur */
-  #cusdis_thread {
-    width: 100%;
-    min-height: 1000px; /* On donne de la place dès le début */
-    margin-bottom: 2rem;
+<!-- Import du CSS de Waline -->
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
+
+<script>
+  import { init } from '@waline/client';
+
+  let walineInstance: any = null;
+
+  function initWaline() {
+    const container = document.querySelector('#waline');
+    if (!container) return;
+
+    // Nettoyage si une instance existe déjà (évite les doublons avec Astro transitions)
+    if (walineInstance) {
+      walineInstance.destroy();
+    }
+
+    walineInstance = init({
+      el: '#waline',
+      serverURL: 'https://recette-vercel.vercel.app', // ⚠️ REMPLACE PAR TON URL VERCEL
+      lang: 'fr',
+      dark: 'html[data-theme="dark"]', // Détection automatique du thème AstroPaper
+      search: false, // Plus léger
+      reaction: true, // Permet des réactions type emoji sur les recettes
+      requiredMeta: ['nick'], // Seul le pseudo est obligatoire
+      wordLimit: 500,
+      imageUploader: false, // Désactivé par défaut pour la sécurité
+    });
   }
 
-  /* On force l'iframe qui sera générée à l'intérieur */
-  #cusdis_thread :global(iframe) {
-    width: 100% !important;
-    min-height: 1000px !important; /* Force la hauteur du formulaire */
-    border: none !important;
+  // Initialisation au chargement et lors de la navigation Astro
+  document.addEventListener('astro:page-load', initWaline);
+</script>
+
+<style is:global>
+  /* Personnalisation aux couleurs de SashaDarmon.fr */
+  :root {
+    --waline-theme-color: #95ec38 !important; /* Ton vert lime */
+    --waline-active-color: #5fa905 !important;
+  }
+
+  /* Ajustements pour le mode sombre d'AstroPaper */
+  html[data-theme="dark"] {
+    --waline-white: #141717 !important;
+    --waline-light-grey: #1e2323 !important;
+    --waline-dark-grey: #9ca3af !important;
+    --waline-color: #f0f4f4 !important;
+    --waline-bgcolor: #141717 !important;
+    --waline-bgcolor-light: #1e2323 !important;
+    --waline-border-color: #2d3535 !important;
+    --waline-disable-bgcolor: #121414 !important;
+  }
+
+  /* On force le conteneur à prendre toute la hauteur nécessaire */
+  .wl-panel {
+    margin-bottom: 2rem;
+    border-radius: 12px !important;
   }
 </style>
-
-<script is:inline>
-  // Petite fonction pour synchroniser le thème de Cusdis avec ton site
-  function syncCusdisTheme() {
-    const theme = document.documentElement.getAttribute("data-theme");
-    const iframe = document.querySelector("#cusdis_thread iframe");
-    if (iframe) {
-      iframe.contentWindow.postMessage(
-        JSON.stringify({
-          type: "setTheme",
-          theme: theme, // envoie 'light' ou 'dark'
-        }),
-        "*"
-      );
-    }
-  }
-
-  // On surveille le changement de thème sur ton site
-  const observer = new MutationObserver(syncCusdisTheme);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
-  });
-</script>
