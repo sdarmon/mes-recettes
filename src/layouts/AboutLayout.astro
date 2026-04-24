@@ -1,116 +1,87 @@
 ---
-export const prerender = false; // IMPORTANT : permet de lire l'URL en direct sur le serveur
-
+// On reste en mode statique pour que Pagefind soit content
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import Layout from "./Layout.astro";
 import { SITE } from "@/config";
 import Main from "@/layouts/Main.astro";
-
-// On récupère le paramètre dans l'URL
-const adminQuery = Astro.url.searchParams.get("admin");
-const isAdmin = adminQuery === "kakoukakou";
 ---
 
 <Layout title={`About | ${SITE.title}`}>
   <Header />
-  <Main pageTitle="About" pageDesc="Administration du carnet de recettes">
-    {
-      !isAdmin && (
-        <p>
-          Bienvenue sur la page About. <br />
-          Pour accéder au formulaire d'ajout de recette, utilisez l'URL secrète. (/?admin=M2P)
-        </p>
-      )
-    }
+  <Main pageTitle="About" pageDesc="Administration">
+    <div id="public-content">
+      <p>Bienvenue sur mon carnet de recettes.</p>
+    </div>
 
-    {
-      isAdmin && (
-        <div class="mt-20 border-t-2 border-accent pt-10">
-          <h2 class="text-2xl font-bold text-accent text-gray-800">
-            Zone Admin : Ajouter une recette
-          </h2>
-          <form id="recipe-form" class="mt-4 flex flex-col gap-4 text-gray-800">
-            <input type="hidden" name="adminKey" value={adminQuery} />
+    <!-- La zone admin est cachée par défaut avec "hidden" -->
+    <div
+      id="admin-zone"
+      class="mt-20 hidden border-t-2 border-accent pt-10 text-gray-800"
+    >
+      <h2 class="text-2xl font-bold text-accent">
+        Zone Admin : Ajouter une recette
+      </h2>
 
-            <div class="flex flex-col">
-              <label for="author" class="text-sm font-bold">
-                Auteur :
-              </label>
-              <input
-                type="text"
-                name="author"
-                id="author"
-                placeholder="Sasha Darmon"
-                class="rounded border p-2"
-                required
-              />
-            </div>
+      <form id="recipe-form" class="mt-4 flex flex-col gap-4">
+        <!-- Le champ adminKey sera rempli par le script -->
+        <input type="hidden" name="adminKey" id="adminKeyInput" value="" />
 
-            <div class="flex flex-col">
-              <label for="title" class="text-sm font-bold">
-                Titre de la recette :
-              </label>
-              <input
-                type="text"
-                name="title"
-                id="title"
-                placeholder="Gâteau au chocolat"
-                class="rounded border p-2"
-                required
-              />
-            </div>
-
-            <div class="flex flex-col">
-              <label for="description" class="text-sm font-bold">
-                Description :
-              </label>
-              <textarea
-                name="description"
-                id="description"
-                placeholder="Une recette simple et rapide..."
-                class="rounded border p-2"
-                required
-              />
-            </div>
-
-            <div class="flex flex-col">
-              <label for="tags" class="text-sm font-bold">
-                Tags (séparés par des virgules) :
-              </label>
-              <input
-                type="text"
-                name="tags"
-                id="tags"
-                placeholder="dessert, chocolat, rapide"
-                class="rounded border p-2"
-              />
-            </div>
-
-            <div class="flex flex-col">
-              <label for="content" class="text-sm font-bold">
-                Contenu (Markdown/MDX) :
-              </label>
-              <textarea
-                name="content"
-                id="content"
-                placeholder="## Ingrédients..."
-                class="h-64 rounded border p-2 font-mono"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              class="rounded bg-[#a4cf0a] p-3 font-bold text-black hover:opacity-90"
-            >
-              🚀 Publier la recette sur GitHub
-            </button>
-          </form>
-          <p id="msg" class="mt-4 hidden rounded p-3 text-center" />
+        <div class="flex flex-col">
+          <label class="font-bold">Auteur :</label>
+          <input
+            type="text"
+            name="author"
+            placeholder="Sasha"
+            class="rounded border p-2"
+            required
+          />
         </div>
-      )
-    }
+
+        <div class="flex flex-col">
+          <label class="font-bold">Titre :</label>
+          <input
+            type="text"
+            name="title"
+            placeholder="Ma super recette"
+            class="rounded border p-2"
+            required
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="font-bold">Description :</label>
+          <textarea name="description" class="rounded border p-2" required
+          ></textarea>
+        </div>
+
+        <div class="flex flex-col">
+          <label class="font-bold">Tags :</label>
+          <input
+            type="text"
+            name="tags"
+            placeholder="pizza, dessert"
+            class="rounded border p-2"
+          />
+        </div>
+
+        <div class="flex flex-col">
+          <label class="font-bold">Contenu Markdown :</label>
+          <textarea
+            name="content"
+            class="h-64 rounded border p-2 font-mono"
+            required></textarea>
+        </div>
+
+        <button
+          type="submit"
+          class="rounded bg-[#a4cf0a] p-3 font-bold text-black hover:opacity-90"
+        >
+          🚀 Publier sur GitHub
+        </button>
+      </form>
+      <p id="msg" class="mt-4 hidden rounded p-3 text-center"></p>
+    </div>
   </Main>
   <Footer />
 </Layout>
@@ -118,17 +89,34 @@ const isAdmin = adminQuery === "kakoukakou";
 <script>
   import { actions } from "astro:actions";
 
+  // 1. GESTION DE L'AFFICHAGE (Côté Client)
+  const urlParams = new URLSearchParams(window.location.search);
+  const adminValue = urlParams.get("admin");
+
+  if (adminValue === "kakoukakou") {
+    // On montre la zone admin
+    const adminZone = document.getElementById("admin-zone");
+    if (adminZone) adminZone.classList.remove("hidden");
+
+    // On remplit le champ caché pour l'Action
+    const keyInput = document.getElementById(
+      "adminKeyInput"
+    ) as HTMLInputElement;
+    if (keyInput) keyInput.value = adminValue;
+  }
+
+  // 2. GESTION DE L'ENVOI
   const form = document.getElementById("recipe-form") as HTMLFormElement;
   const msg = document.getElementById("msg");
 
   form?.addEventListener("submit", async e => {
     e.preventDefault();
-    if (!confirm("Voulez-vous vraiment publier cette recette ?")) return;
+    if (!confirm("Publier cette recette ?")) return;
 
     if (msg) {
-      msg.classList.remove("hidden");
-      msg.textContent = "⏳ Envoi en cours vers GitHub...";
-      msg.className = "mt-4 p-3 rounded text-center bg-blue-100 text-blue-800";
+      msg.classList.remove("hidden", "bg-red-100", "bg-green-100");
+      msg.textContent = "⏳ Envoi à GitHub en cours...";
+      msg.classList.add("bg-blue-100", "text-blue-800");
     }
 
     const formData = new FormData(form);
@@ -137,13 +125,13 @@ const isAdmin = adminQuery === "kakoukakou";
     if (msg) {
       if (error) {
         msg.textContent = "❌ Erreur : " + error.message;
-        msg.className =
-          "mt-4 p-3 rounded text-center bg-red-100 text-red-800 font-bold";
+        msg.classList.replace("bg-blue-100", "bg-red-100");
+        msg.classList.add("text-red-800");
       } else {
         msg.textContent =
-          "✅ Succès ! La recette a été envoyée. Le site sera mis à jour dans 2 minutes.";
-        msg.className =
-          "mt-4 p-3 rounded text-center bg-green-100 text-green-800 font-bold border-2 border-green-500";
+          "✅ Recette envoyée ! Le site sera à jour dans 2-3 min.";
+        msg.classList.replace("bg-blue-100", "bg-green-100");
+        msg.classList.add("text-green-800", "border-2", "border-green-500");
         form.reset();
       }
     }
