@@ -7,18 +7,19 @@ export const server = {
     accept: "form",
     input: z.object({
       postSlug: z.string(),
-      name: z.string().min(1, "Name is required"),
-      email: z.string().email().optional().or(z.literal("")),
-      message: z.string().min(1, "Comment cannot be empty"),
+      name: z.string().min(1, "Le nom est requis"),
+      email: z.string().email().or(z.literal("")).optional(),
+      message: z.string().min(1, "Le message ne peut pas être vide"),
     }),
-    handler: async ({ postSlug, name, email, message }) => {
+    handler: async input => {
+      // On ne mentionne PAS 'id' ici, la DB s'en occupe
       const comment = await db
         .insert(Comment)
         .values({
-          postSlug,
-          name,
+          postSlug: input.postSlug,
+          name: input.name,
           email: input.email || null,
-          message,
+          message: input.message,
           createdAt: new Date(),
         })
         .returning();
