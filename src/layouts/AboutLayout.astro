@@ -1,70 +1,151 @@
 ---
-import type { MarkdownLayoutProps } from "astro";
+export const prerender = false; // IMPORTANT : permet de lire l'URL en direct sur le serveur
+
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import Breadcrumb from "@/components/Breadcrumb.astro";
 import Layout from "./Layout.astro";
-import Comments from "@/components/Comments.astro";
 import { SITE } from "@/config";
 import Main from "@/layouts/Main.astro";
 
-type Props = MarkdownLayoutProps<{ title: string }>;
-
-const { frontmatter } = Astro.props;
-
-const currentUrl = Astro.url.href;
-
+// On récupère le paramètre dans l'URL
 const adminQuery = Astro.url.searchParams.get("admin");
 const isAdmin = adminQuery === "kakoukakou";
 ---
 
 <Layout title={`About | ${SITE.title}`}>
   <Header />
-  <Main pageTitle="About" pageDesc="TBD.">
+  <Main pageTitle="About" pageDesc="Administration du carnet de recettes">
+    {
+      !isAdmin && (
+        <p>
+          Bienvenue sur la page About. <br />
+          Pour accéder au formulaire d'ajout de recette, utilisez l'URL secrète. (/?admin=M2P)
+        </p>
+      )
+    }
 
-    <p>
-      Bienvenue sur mon carnet de recettes... <br/>
-      Pour accéder au formulaire d'ajout de recette, allez à l'URL suivant:
-      https://recette.sashadarmon.fr/about?admin=M2P <br/>
-      En remplaçant M2P par le mot de passe que je vous ai donné en privé. <br/>
-      Si vous avez le bon mot de passe, vous verrez un formulaire pour ajouter une recette. <br/>
-      Les recettes ajoutées via ce formulaire seront publiées sur GitHub et apparaîtront sur le site après validation. <br/>
-    </p>
-    
-    {isAdmin && (
-      <div class="mt-20 border-t-2 pt-10">
-        <h2 class="text-2xl font-bold text-accent">Zone Admin : Ajouter une recette</h2>
-        <form id="recipe-form" class="mt-4 flex flex-col gap-4">
-          <input type="hidden" name="adminKey" value={adminQuery} />
+    {
+      isAdmin && (
+        <div class="mt-20 border-t-2 border-accent pt-10">
+          <h2 class="text-2xl font-bold text-accent text-gray-800">
+            Zone Admin : Ajouter une recette
+          </h2>
+          <form id="recipe-form" class="mt-4 flex flex-col gap-4 text-gray-800">
+            <input type="hidden" name="adminKey" value={adminQuery} />
 
-          <!-- Nouveau champ Author -->
-          <div class="flex flex-col">
-            <label for="author" class="text-sm font-bold">Auteur :</label>
-            <input
-              type="text"
-              name="author"
-              id="author"
-              placeholder="Ex: Sasha Darmon"
-              class="p-2 border rounded"
-              required
-            />
-          </div>
+            <div class="flex flex-col">
+              <label for="author" class="text-sm font-bold">
+                Auteur :
+              </label>
+              <input
+                type="text"
+                name="author"
+                id="author"
+                placeholder="Sasha Darmon"
+                class="rounded border p-2"
+                required
+              />
+            </div>
 
-          <div class="flex flex-col">
-            <label for="title" class="text-sm font-bold">Titre de la recette :</label>
-            <input name="title" id="title" placeholder="Titre" class="p-2 border rounded" required />
-          </div>
+            <div class="flex flex-col">
+              <label for="title" class="text-sm font-bold">
+                Titre de la recette :
+              </label>
+              <input
+                type="text"
+                name="title"
+                id="title"
+                placeholder="Gâteau au chocolat"
+                class="rounded border p-2"
+                required
+              />
+            </div>
 
-          <!-- ... le reste de vos champs existants ... -->
+            <div class="flex flex-col">
+              <label for="description" class="text-sm font-bold">
+                Description :
+              </label>
+              <textarea
+                name="description"
+                id="description"
+                placeholder="Une recette simple et rapide..."
+                class="rounded border p-2"
+                required
+              />
+            </div>
 
-          <button type="submit" class="bg-accent text-white p-3 rounded font-bold hover:opacity-90">
-            Publier sur GitHub
-          </button>
-        </form>
-        <p id="msg" class="hidden mt-2 p-3 rounded"></p>
-      </div>
-    )}
+            <div class="flex flex-col">
+              <label for="tags" class="text-sm font-bold">
+                Tags (séparés par des virgules) :
+              </label>
+              <input
+                type="text"
+                name="tags"
+                id="tags"
+                placeholder="dessert, chocolat, rapide"
+                class="rounded border p-2"
+              />
+            </div>
+
+            <div class="flex flex-col">
+              <label for="content" class="text-sm font-bold">
+                Contenu (Markdown/MDX) :
+              </label>
+              <textarea
+                name="content"
+                id="content"
+                placeholder="## Ingrédients..."
+                class="h-64 rounded border p-2 font-mono"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="rounded bg-[#a4cf0a] p-3 font-bold text-black hover:opacity-90"
+            >
+              🚀 Publier la recette sur GitHub
+            </button>
+          </form>
+          <p id="msg" class="mt-4 hidden rounded p-3 text-center" />
+        </div>
+      )
+    }
   </Main>
   <Footer />
 </Layout>
 
+<script>
+  import { actions } from "astro:actions";
+
+  const form = document.getElementById("recipe-form") as HTMLFormElement;
+  const msg = document.getElementById("msg");
+
+  form?.addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!confirm("Voulez-vous vraiment publier cette recette ?")) return;
+
+    if (msg) {
+      msg.classList.remove("hidden");
+      msg.textContent = "⏳ Envoi en cours vers GitHub...";
+      msg.className = "mt-4 p-3 rounded text-center bg-blue-100 text-blue-800";
+    }
+
+    const formData = new FormData(form);
+    const { data, error } = await actions.addRecipe(formData);
+
+    if (msg) {
+      if (error) {
+        msg.textContent = "❌ Erreur : " + error.message;
+        msg.className =
+          "mt-4 p-3 rounded text-center bg-red-100 text-red-800 font-bold";
+      } else {
+        msg.textContent =
+          "✅ Succès ! La recette a été envoyée. Le site sera mis à jour dans 2 minutes.";
+        msg.className =
+          "mt-4 p-3 rounded text-center bg-green-100 text-green-800 font-bold border-2 border-green-500";
+        form.reset();
+      }
+    }
+  });
+</script>
