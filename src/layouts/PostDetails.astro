@@ -18,12 +18,33 @@ import C from "@/components/PortionCalculator.astro";
 import PizzaCalculator from "@/components/PizzaCalculator.astro";
 import WakeLock from "@/components/WakeLock.astro";
 
+
+export const prerender = false;
+import { getEntry, render } from "astro:content";
+import Comments from "@/components/Comments.astro";
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/404");
+}
+
+const post = await getEntry("blog", slug);
+
+if (!post) {
+  return Astro.redirect("/404");
+}
+
+const { Content } = await render(post);
+type Props = {
+  post: CollectionEntry<"blog">;
+};
+
 type Props = {
   post: CollectionEntry<"blog">;
   posts: CollectionEntry<"blog">[];
 };
 
-const { post, posts } = Astro.props;
+const {  posts } = Astro.props;
 
 const {
   title,
@@ -39,7 +60,7 @@ const {
   personnes,
 } = post.data;
 
-const { Content } = await render(post);
+//const { Content } = await render(post);
 
 let ogImageUrl: string | undefined;
 
@@ -140,6 +161,8 @@ const nextPost =
     <ul class="mt-4 mb-8 flex flex-wrap gap-4 sm:my-8">
       {tags.map(tag => <Tag tag={slugifyStr(tag)} tagName={tag} size="sm" />)}
     </ul>
+
+    <Comments postSlug={slug} />
 
     <BackToTopButton />
 
