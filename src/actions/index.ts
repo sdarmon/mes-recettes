@@ -28,7 +28,6 @@ export const server = {
     },
   }),
 
-
   addRecipe: defineAction({
     accept: "form",
     input: z.object({
@@ -37,8 +36,8 @@ export const server = {
       title: z.string().min(5),
       description: z.string().min(10),
       tags: z.string(),
-      personnes: z.coerce.number(), // On force la conversion en nombre
-      unite: z.string(), // "personnes", "pizzas", "pâtes", etc.
+      personnes: z.coerce.number(),
+      unite: z.string(),
       content: z.string().min(20),
     }),
     handler: async input => {
@@ -54,21 +53,22 @@ export const server = {
         .replace(/-+/g, "-")
         .trim();
 
+      // IMPORTANT : Pas d'espaces au début des lignes dans le template literal
       const mdxContent = `---
-  author: "${input.author.replace(/"/g, "'")}"
-  pubDatetime: ${new Date().toISOString()}
-  title: "${input.title.replace(/"/g, "'")}"
-  featured: false
-  draft: false
-  personnes: ${input.personnes}
-  unite: "${input.unite.replace(/"/g, "'")}"
-  tags:
-  ${input.tags
-    .split(",")
-    .map(tag => `  - ${tag.trim()}`)
-    .join("\n")}
-  description: "${input.description.replace(/"/g, "'")}"
-  ---
+author: "${input.author.replace(/"/g, "'")}"
+pubDatetime: ${new Date().toISOString()}
+title: "${input.title.replace(/"/g, "'")}"
+featured: false
+draft: false
+personnes: ${input.personnes}
+unite: "${input.unite.replace(/"/g, "'")}"
+tags:
+${input.tags
+  .split(",")
+  .map(tag => `  - ${tag.trim()}`)
+  .join("\n")}
+description: "${input.description.replace(/"/g, "'")}"
+---
 
   ${input.content}`;
 
@@ -90,7 +90,14 @@ export const server = {
         }
       );
 
-      if (!response.ok) throw new Error("Erreur GitHub API");
+      if (!response.ok) {
+        // On récupère le vrai message d'erreur de GitHub
+        const errorData = await response.json();
+        throw new Error(
+          `GitHub dit : ${errorData.message} (Code: ${response.status})`
+        );
+      }
+
       return { success: true };
     },
   }),
