@@ -1,9 +1,10 @@
-import { defineConfig, envField, fontProviders } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
 import mdx from "@astrojs/mdx";
+
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
@@ -20,9 +21,13 @@ import netlify from "@astrojs/netlify";
 export default defineConfig({
   site: "https://recette.sashadarmon.fr",
 
-  integrations: [sitemap({
-    filter: page => SITE.showArchives || !page.endsWith("/archives"),
-  }), mdx(), db()],
+  integrations: [
+    sitemap({
+      filter: page => SITE.showArchives || !page.endsWith("/archives"),
+    }),
+    mdx(),
+    db(),
+  ],
 
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
@@ -66,5 +71,7 @@ export default defineConfig({
     },
   },
 
+  output: "server",
   adapter: netlify(),
+  integrations: [db()],
 });

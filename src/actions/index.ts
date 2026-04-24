@@ -8,7 +8,7 @@ export const server = {
     input: z.object({
       postSlug: z.string(),
       name: z.string().min(1, "Name is required"),
-      email: z.string().email("Valid email is required"),
+      email: z.string().email().optional().or(z.literal("")),
       message: z.string().min(1, "Comment cannot be empty"),
     }),
     handler: async ({ postSlug, name, email, message }) => {
@@ -17,7 +17,7 @@ export const server = {
         .values({
           postSlug,
           name,
-          email,
+          email: input.email || null,
           message,
           createdAt: new Date(),
         })

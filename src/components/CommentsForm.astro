@@ -8,11 +8,23 @@ interface Props {
 const { postSlug } = Astro.props;
 
 const result = Astro.getActionResult(actions.addComment);
+
+if (result && !result.error) {
+  return Astro.redirect(`/posts/${postSlug}#comments`);
+}
+
 const inputErrors = isInputError(result?.error) ? result.error.fields : {};
 ---
 
+{result && !result.error && (
+<div class="p-4 mb-4 bg-green-100 text-green-800 rounded">
+  Merci ! Votre commentaire a été ajouté.
+</div>
+  )}
+
+
 <form method="POST" action={actions.addComment} class="mb-8">
-  <input type="hidden" name="postSlug" value="{postSlug}" />
+  <input type="hidden" name="postSlug" value={postSlug} />
 
   <div class="mb-4">
     <label for="name">Pseudo:</label>
@@ -27,12 +39,11 @@ const inputErrors = isInputError(result?.error) ? result.error.fields : {};
   </div>
 
   <div class="mb-4">
-    <label for="email">E-miel 🐝:</label>
+    <label for="email">E-miel (Optionnel) 🐝:</label>
     <input
       type="email"
       id="email"
       name="email"
-      required
       class="w-full rounded border p-2"
     />
     {inputErrors.email && <p class="text-red-500">{inputErrors.email}</p>}
