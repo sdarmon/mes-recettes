@@ -20,7 +20,6 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
 1. **Préchauffage :** Four à 180°C.
 2. **Mélange :** Écrasez les <C v="4" /> bananes et mélangez avec le reste.
 3. **Cuisson :** Enfournez 25 minutes.`;
-
 ---
 
 <Layout title={`About | ${SITE.title}`}>
@@ -28,54 +27,63 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
   <Main pageTitle="About" pageDesc="Administration">
     <div id="public-content">
       <p>
-        Bienvenue sur mon carnet de recettes.<br/>
+        Bienvenue sur mon carnet de recettes.<br />
         Aller à https://recette.sashadarmon.fr/about/?admin=M2P pour ajouter une recette.
       </p>
     </div>
 
-    <!-- La zone admin est cachée par défaut avec "hidden" -->
     <div
       id="admin-zone"
-      class="hidden app-prose mt-8 w-full max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)"
+      class="mt-20 border-t-2 border-accent pt-10 text-gray-900 dark:text-white"
     >
-      <h2 class="text-2xl font-bold text-accent">
+      <h2 class="mb-6 text-2xl font-bold text-accent">
         Zone Admin : Ajouter une recette
       </h2>
 
-      <!-- Ajout de text-gray-900 (light) et dark:text-white (dark) sur le formulaire -->
-      <form id="recipe-form" class="mt-4 flex flex-col gap-4 text-gray-900 dark:text-white">
+      <form id="recipe-form" class="flex flex-col gap-4">
         <input type="hidden" name="adminKey" id="adminKeyInput" value="" />
 
-        <div class="flex flex-col">
-          <label class="font-bold">Auteur :</label>
-          <input
-            type="text"
-            name="author"
-            placeholder="Sasha"
-            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-accent"
-            required
-          />
+        <!-- Ligne Auteur / Titre -->
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="flex flex-col">
+            <label class="font-bold">Auteur :</label>
+            <input
+              type="text"
+              name="author"
+              class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
+              required
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="font-bold">Titre :</label>
+            <input
+              type="text"
+              name="title"
+              class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
+              required
+            />
+          </div>
         </div>
 
-        <div class="flex flex-col">
-          <label class="font-bold">Titre :</label>
-          <input
-            type="text"
-            name="title"
-            placeholder="Ma super recette"
-            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-accent"
-            required
-          />
-        </div>
-
+        <!-- Ligne Quantité / Unité -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col">
             <label class="font-bold">Quantité de base :</label>
-            <input type="number" name="personnes" placeholder="Ex: 4" class="rounded border p-2 bg-white dark:bg-zinc-900 dark:border-zinc-700" required />
+            <input
+              type="number"
+              name="personnes"
+              class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
+              required
+            />
           </div>
           <div class="flex flex-col">
             <label class="font-bold">Unité :</label>
-            <input type="text" name="unite" placeholder="Ex: personnes, pizzas, parts" class="rounded border p-2 bg-white dark:bg-zinc-900 dark:border-zinc-700" required />
+            <input
+              type="text"
+              name="unite"
+              class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
+              required
+            />
           </div>
         </div>
 
@@ -83,48 +91,145 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
           <label class="font-bold">Description :</label>
           <textarea
             name="description"
-            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 outline-none focus:ring-2 focus:ring-accent"
-            required
-          ></textarea>
+            class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
+            required></textarea>
         </div>
 
         <div class="flex flex-col">
-          <label class="font-bold">Tags :</label>
-          <input
-            type="text"
-            name="tags"
-            placeholder="pizza, dessert"
-            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-accent"
-          />
-        </div>
-
-        <div class="flex flex-col">
-          <label class="font-bold text-accent">Contenu Markdown (Exemple dynamique inclus) :</label>
-          <p class="text-xs italic opacity-80 mb-1">
-            Note : Utilisez &lt;C v="10" /&gt; pour que le chiffre "10" s'adapte automatiquement au nombre de personnes.
-          </p>
+          <label class="font-bold">Contenu Markdown :</label>
           <textarea
+            id="markdown-input"
             name="content"
-            class="h-96 rounded border p-2 font-mono text-sm bg-white dark:bg-zinc-900 dark:border-zinc-700"
-            required>{recipeTemplate}</textarea>
+            class="h-80 rounded border bg-white p-2 font-mono text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            required>{recipeTemplate}</textarea
+          >
         </div>
 
-        <button
-          type="submit"
-          class="rounded bg-[#a4cf0a] p-3 font-bold text-black hover:opacity-90 active:scale-95 transition-transform"
-        >
-          🚀 Publier sur GitHub
-        </button>
+        <!-- BOUTONS -->
+        <div class="mt-2 flex flex-col gap-4 sm:flex-row">
+          <button
+            type="button"
+            id="preview-btn"
+            class="flex-1 rounded border-2 border-accent p-3 font-bold text-accent transition-all hover:bg-accent hover:text-white"
+          >
+            👁️ Voir l'aperçu (plein écran)
+          </button>
+          <button
+            type="submit"
+            class="flex-1 rounded bg-[#a4cf0a] p-3 font-bold text-black hover:opacity-90"
+          >
+            🚀 Publier la recette
+          </button>
+        </div>
       </form>
+
+      <!-- ZONE DE PREVIEW (Toute la largeur, en dessous) -->
+      <div
+        id="preview-container"
+        class="mt-10 hidden rounded-b-lg border-t-4 border-accent bg-white p-6 shadow-xl dark:bg-zinc-900"
+      >
+        <div class="mb-6 flex items-center justify-between">
+          <h3 class="text-xl font-bold tracking-widest text-accent uppercase">
+            Aperçu du rendu final
+          </h3>
+          <button
+            type="button"
+            onclick="document.getElementById('preview-container').classList.add('hidden')"
+            class="text-sm text-gray-500 text-red-500 hover:underline"
+            >Fermer l'aperçu</button
+          >
+        </div>
+
+        <div
+          id="preview-content"
+          class="app-prose max-w-none dark:prose-invert"
+        >
+          <!-- Le contenu généré arrivera ici -->
+        </div>
+      </div>
+
       <p id="msg" class="mt-4 hidden rounded p-3 text-center font-bold"></p>
     </div>
-
   </Main>
   <Footer />
 </Layout>
 
 <script>
   import { actions } from "astro:actions";
+  // Import de marked via CDN pour transformer le texte
+  import { Marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+  const marked = new Marked();
+
+  const previewBtn = document.getElementById("preview-btn");
+  const previewContainer = document.getElementById("preview-container");
+  const previewContent = document.getElementById("preview-content");
+  const markdownInput = document.getElementById(
+    "markdown-input"
+  ) as HTMLTextAreaElement;
+
+  // Sélection des nouveaux champs
+  const titleInput = document.querySelector(
+    'input[name="title"]'
+  ) as HTMLInputElement;
+  const authorInput = document.querySelector(
+    'input[name="author"]'
+  ) as HTMLInputElement;
+  const descInput = document.querySelector(
+    'textarea[name="description"]'
+  ) as HTMLTextAreaElement;
+  const qtyInput = document.querySelector(
+    'input[name="personnes"]'
+  ) as HTMLInputElement;
+  const unitInput = document.querySelector(
+    'input[name="unite"]'
+  ) as HTMLInputElement;
+
+  previewBtn?.addEventListener("click", () => {
+    if (!previewContainer || !previewContent || !markdownInput) return;
+
+    previewContainer.classList.remove("hidden");
+
+    let rawMarkdown = markdownInput.value;
+    let processedMarkdown = rawMarkdown.replace(
+      /<C v="([\d.]+)" \/>/g,
+      '<strong class="text-accent underline decoration-dotted">$1</strong>'
+    );
+
+    const htmlContent = marked.parse(processedMarkdown);
+
+    // CONSTRUCTION DU RENDU FINAL
+    previewContent.innerHTML = `
+      <!-- TITRE ET AUTEUR -->
+      <h1 class="text-4xl font-bold text-accent mb-2">${titleInput.value || "Titre de la recette"}</h1>
+      <p class="italic text-lg mb-4 text-gray-600 dark:text-gray-400">Par ${authorInput.value || "Auteur inconnu"}</p>
+      
+      <!-- DESCRIPTION -->
+      <p class="text-xl mb-8 leading-relaxed border-l-4 border-accent pl-4 italic">
+        ${descInput.value || "Pas de description renseignée."}
+      </p>
+
+      <!-- SIMULATION DU CALCULATEUR (Visuel uniquement) -->
+      <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl mb-8 border border-gray-200 dark:border-zinc-700">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold uppercase tracking-wider">Quantité :</span>
+            <div class="bg-white dark:bg-zinc-900 border border-accent px-4 py-1 rounded-lg font-bold text-accent">
+                ${qtyInput.value || "0"}
+            </div>
+        </div>
+        <span class="font-medium">${unitInput.value || "unité"}</span>
+        <span class="text-xs text-gray-400 ml-auto">(Simulé dans l'aperçu)</span>
+      </div>
+
+      <hr class="mb-8 border-dashed border-gray-300 dark:border-zinc-700" />
+      
+      <!-- CORPS DE LA RECETTE -->
+      <div class="recipe-body">
+        ${htmlContent}
+      </div>
+    `;
+
+    previewContainer.scrollIntoView({ behavior: "smooth" });
+  });
 
   // On récupère ce qu'il y a dans l'URL après ?admin=
   const urlParams = new URLSearchParams(window.location.search);
@@ -136,7 +241,9 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
     const adminZone = document.getElementById("admin-zone");
     if (adminZone) adminZone.classList.remove("hidden");
 
-    const keyInput = document.getElementById("adminKeyInput") as HTMLInputElement;
+    const keyInput = document.getElementById(
+      "adminKeyInput"
+    ) as HTMLInputElement;
     if (keyInput) keyInput.value = adminValue;
   }
 
@@ -160,10 +267,12 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
       if (error) {
         // C'est ici que l'erreur "Interdit" apparaîtra si le mot de passe est mauvais
         msg.textContent = "❌ " + error.message;
-        msg.className = "mt-4 p-3 rounded text-center bg-red-100 text-red-800 font-bold";
+        msg.className =
+          "mt-4 p-3 rounded text-center bg-red-100 text-red-800 font-bold";
       } else {
         msg.textContent = "✅ Recette publiée !";
-        msg.className = "mt-4 p-3 rounded text-center bg-green-100 text-green-800 font-bold";
+        msg.className =
+          "mt-4 p-3 rounded text-center bg-green-100 text-green-800 font-bold";
         form.reset();
       }
     }
