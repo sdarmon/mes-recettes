@@ -12,6 +12,8 @@ const { postSlug } = Astro.props;
   <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl">Commentaires</h1>
   <div server:defer>
     <CommentsForm postSlug={postSlug} />
-    <CommentsList postSlug={postSlug}  server:defer/>
+    <CommentsList postSlug={postSlug} server:defer> 
+      <p slot="fallback">Chargement des commentaires...</p>
+    </CommentsList>
   </div>
 </div>
