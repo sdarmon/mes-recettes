@@ -1,29 +1,15 @@
 ---
-import { actions, isInputError } from "astro:actions";
+import { actions } from "astro:actions";
 
 interface Props {
   postSlug: string;
 }
 
 const { postSlug } = Astro.props;
-
-const result = Astro.getActionResult(actions.addComment);
-
-if (result && !result.error) {
-  return Astro.redirect(`/posts/${postSlug}#comments`);
-}
-
-const inputErrors = isInputError(result?.error) ? result.error.fields : {};
 ---
 
-{result && !result.error && (
-<div class="p-4 mb-4 bg-green-100 text-green-800 rounded">
-  Merci ! Votre commentaire a été ajouté.
-</div>
-  )}
-
-
-<form method="POST" action={actions.addComment} class="mb-8">
+<!-- 1. On retire 'method' et 'action' du form pour éviter le rechargement 404 -->
+<form id="comment-form" class="mb-8">
   <input type="hidden" name="postSlug" value={postSlug} />
 
   <div class="mb-4">
@@ -35,7 +21,6 @@ const inputErrors = isInputError(result?.error) ? result.error.fields : {};
       required
       class="w-full rounded border p-2"
     />
-    {inputErrors.name && <p class="text-red-500">{inputErrors.name}</p>}
   </div>
 
   <div class="mb-4">
@@ -46,7 +31,6 @@ const inputErrors = isInputError(result?.error) ? result.error.fields : {};
       name="email"
       class="w-full rounded border p-2"
     />
-    {inputErrors.email && <p class="text-red-500">{inputErrors.email}</p>}
   </div>
 
   <div class="mb-4">
@@ -56,10 +40,41 @@ const inputErrors = isInputError(result?.error) ? result.error.fields : {};
       name="message"
       required
       class="w-full rounded border p-2"></textarea>
-    {inputErrors.message && <p class="text-red-500">{inputErrors.message}</p>}
   </div>
 
   <button type="submit" class="rounded bg-[#a4cf0a] px-4 py-2 text-black">
     Envoyer le commentaire
   </button>
+
+  <p id="form-msg" class="mt-2 hidden"></p>
 </form>
+
+<script>
+  import { actions } from "astro:actions";
+
+  const form = document.getElementById("comment-form") as HTMLFormElement;
+  const msg = document.getElementById("form-msg");
+
+  form?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const formData = new FormData(form);
+
+    // 2. On appelle l'action en JavaScript
+    const { data, error } = await actions.addComment(formData);
+
+    if (msg) {
+      msg.classList.remove("hidden");
+      if (error) {
+        msg.textContent = "Erreur lors de l'envoi...";
+        msg.className = "mt-2 text-red-500";
+      } else {
+        msg.textContent =
+          "Merci ! Votre commentaire a été ajouté (il apparaîtra dans quelques instants).";
+        msg.className = "mt-2 text-green-600";
+        form.reset();
+        // Optionnel : recharger la page après 2 secondes pour voir le commentaire
+        setTimeout(() => window.location.reload(), 2000);
+      }
+    }
+  });
+</script>
