@@ -13,11 +13,57 @@ type Props = MarkdownLayoutProps<{ title: string }>;
 const { frontmatter } = Astro.props;
 
 const currentUrl = Astro.url.href;
+
+const adminQuery = Astro.url.searchParams.get("admin");
+const isAdmin = adminQuery === "kakoukakou";
 ---
+
 <Layout title={`About | ${SITE.title}`}>
   <Header />
   <Main pageTitle="About" pageDesc="TBD.">
 
+    <p>
+      Bienvenue sur mon carnet de recettes... <br/>
+      Pour accéder au formulaire d'ajout de recette, allez à l'URL suivant:
+      https://recette.sashadarmon.fr/about?admin=M2P <br/>
+      En remplaçant M2P par le mot de passe que je vous ai donné en privé. <br/>
+      Si vous avez le bon mot de passe, vous verrez un formulaire pour ajouter une recette. <br/>
+      Les recettes ajoutées via ce formulaire seront publiées sur GitHub et apparaîtront sur le site après validation. <br/>
+    </p>
+    
+    {isAdmin && (
+      <div class="mt-20 border-t-2 pt-10">
+        <h2 class="text-2xl font-bold text-accent">Zone Admin : Ajouter une recette</h2>
+        <form id="recipe-form" class="mt-4 flex flex-col gap-4">
+          <input type="hidden" name="adminKey" value={adminQuery} />
+
+          <!-- Nouveau champ Author -->
+          <div class="flex flex-col">
+            <label for="author" class="text-sm font-bold">Auteur :</label>
+            <input
+              type="text"
+              name="author"
+              id="author"
+              placeholder="Ex: Sasha Darmon"
+              class="p-2 border rounded"
+              required
+            />
+          </div>
+
+          <div class="flex flex-col">
+            <label for="title" class="text-sm font-bold">Titre de la recette :</label>
+            <input name="title" id="title" placeholder="Titre" class="p-2 border rounded" required />
+          </div>
+
+          <!-- ... le reste de vos champs existants ... -->
+
+          <button type="submit" class="bg-accent text-white p-3 rounded font-bold hover:opacity-90">
+            Publier sur GitHub
+          </button>
+        </form>
+        <p id="msg" class="hidden mt-2 p-3 rounded"></p>
+      </div>
+    )}
   </Main>
   <Footer />
 </Layout>
