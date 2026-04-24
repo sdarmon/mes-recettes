@@ -5,26 +5,45 @@ import Footer from "@/components/Footer.astro";
 import Layout from "./Layout.astro";
 import { SITE } from "@/config";
 import Main from "@/layouts/Main.astro";
+
+// Modèle de recette pour pré-remplir le formulaire
+const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités : elle permet aux lecteurs d'adapter la recette selon leurs besoins !
+
+## Ingrédients
+
+* <C v="4" /> bananes mûres
+* <C v="180" />g de compote sans sucre
+* <C v="200" />g de chocolat en morceaux
+
+## Préparation
+
+1. **Préchauffage :** Four à 180°C.
+2. **Mélange :** Écrasez les <C v="4" /> bananes et mélangez avec le reste.
+3. **Cuisson :** Enfournez 25 minutes.`;
+
 ---
 
 <Layout title={`About | ${SITE.title}`}>
   <Header />
   <Main pageTitle="About" pageDesc="Administration">
     <div id="public-content">
-      <p>Bienvenue sur mon carnet de recettes.</p>
+      <p>
+        Bienvenue sur mon carnet de recettes.<br/>
+        Aller à https://recette.sashadarmon.fr/about/?admin=M2P pour ajouter une recette.
+      </p>
     </div>
 
     <!-- La zone admin est cachée par défaut avec "hidden" -->
     <div
       id="admin-zone"
-      class="mt-20 hidden border-t-2 border-accent pt-10 text-gray-800"
+      class="hidden app-prose mt-8 w-full max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)"
     >
       <h2 class="text-2xl font-bold text-accent">
         Zone Admin : Ajouter une recette
       </h2>
 
-      <form id="recipe-form" class="mt-4 flex flex-col gap-4">
-        <!-- Le champ adminKey sera rempli par le script -->
+      <!-- Ajout de text-gray-900 (light) et dark:text-white (dark) sur le formulaire -->
+      <form id="recipe-form" class="mt-4 flex flex-col gap-4 text-gray-900 dark:text-white">
         <input type="hidden" name="adminKey" id="adminKeyInput" value="" />
 
         <div class="flex flex-col">
@@ -33,7 +52,7 @@ import Main from "@/layouts/Main.astro";
             type="text"
             name="author"
             placeholder="Sasha"
-            class="rounded border p-2"
+            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-accent"
             required
           />
         </div>
@@ -44,14 +63,28 @@ import Main from "@/layouts/Main.astro";
             type="text"
             name="title"
             placeholder="Ma super recette"
-            class="rounded border p-2"
+            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-accent"
             required
           />
         </div>
 
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label class="font-bold">Quantité de base :</label>
+            <input type="number" name="personnes" placeholder="Ex: 4" class="rounded border p-2 bg-white dark:bg-zinc-900 dark:border-zinc-700" required />
+          </div>
+          <div class="flex flex-col">
+            <label class="font-bold">Unité :</label>
+            <input type="text" name="unite" placeholder="Ex: personnes, pizzas, parts" class="rounded border p-2 bg-white dark:bg-zinc-900 dark:border-zinc-700" required />
+          </div>
+        </div>
+
         <div class="flex flex-col">
           <label class="font-bold">Description :</label>
-          <textarea name="description" class="rounded border p-2" required
+          <textarea
+            name="description"
+            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 outline-none focus:ring-2 focus:ring-accent"
+            required
           ></textarea>
         </div>
 
@@ -61,27 +94,31 @@ import Main from "@/layouts/Main.astro";
             type="text"
             name="tags"
             placeholder="pizza, dessert"
-            class="rounded border p-2"
+            class="rounded border p-2 bg-white text-gray-900 border-gray-300 dark:bg-zinc-900 dark:text-white dark:border-zinc-700 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-accent"
           />
         </div>
 
         <div class="flex flex-col">
-          <label class="font-bold">Contenu Markdown :</label>
+          <label class="font-bold text-accent">Contenu Markdown (Exemple dynamique inclus) :</label>
+          <p class="text-xs italic opacity-80 mb-1">
+            Note : Utilisez &lt;C v="10" /&gt; pour que le chiffre "10" s'adapte automatiquement au nombre de personnes.
+          </p>
           <textarea
             name="content"
-            class="h-64 rounded border p-2 font-mono"
-            required></textarea>
+            class="h-96 rounded border p-2 font-mono text-sm bg-white dark:bg-zinc-900 dark:border-zinc-700"
+            required>{recipeTemplate}</textarea>
         </div>
 
         <button
           type="submit"
-          class="rounded bg-[#a4cf0a] p-3 font-bold text-black hover:opacity-90"
+          class="rounded bg-[#a4cf0a] p-3 font-bold text-black hover:opacity-90 active:scale-95 transition-transform"
         >
           🚀 Publier sur GitHub
         </button>
       </form>
-      <p id="msg" class="mt-4 hidden rounded p-3 text-center"></p>
+      <p id="msg" class="mt-4 hidden rounded p-3 text-center font-bold"></p>
     </div>
+
   </Main>
   <Footer />
 </Layout>
@@ -89,34 +126,31 @@ import Main from "@/layouts/Main.astro";
 <script>
   import { actions } from "astro:actions";
 
-  // 1. GESTION DE L'AFFICHAGE (Côté Client)
+  // On récupère ce qu'il y a dans l'URL après ?admin=
   const urlParams = new URLSearchParams(window.location.search);
   const adminValue = urlParams.get("admin");
 
-  if (adminValue === "kakoukakou") {
-    // On montre la zone admin
+  // Si l'utilisateur a mis n'importe quoi dans ?admin=
+  // on affiche le formulaire. C'est le serveur qui validera ensuite.
+  if (adminValue) {
     const adminZone = document.getElementById("admin-zone");
     if (adminZone) adminZone.classList.remove("hidden");
 
-    // On remplit le champ caché pour l'Action
-    const keyInput = document.getElementById(
-      "adminKeyInput"
-    ) as HTMLInputElement;
+    const keyInput = document.getElementById("adminKeyInput") as HTMLInputElement;
     if (keyInput) keyInput.value = adminValue;
   }
 
-  // 2. GESTION DE L'ENVOI
   const form = document.getElementById("recipe-form") as HTMLFormElement;
   const msg = document.getElementById("msg");
 
   form?.addEventListener("submit", async e => {
     e.preventDefault();
-    if (!confirm("Publier cette recette ?")) return;
 
+    // Affichage d'un message d'attente
     if (msg) {
-      msg.classList.remove("hidden", "bg-red-100", "bg-green-100");
-      msg.textContent = "⏳ Envoi à GitHub en cours...";
-      msg.classList.add("bg-blue-100", "text-blue-800");
+      msg.classList.remove("hidden");
+      msg.textContent = "Vérification et envoi en cours...";
+      msg.className = "mt-4 p-3 rounded text-center bg-blue-100 text-blue-800";
     }
 
     const formData = new FormData(form);
@@ -124,14 +158,12 @@ import Main from "@/layouts/Main.astro";
 
     if (msg) {
       if (error) {
-        msg.textContent = "❌ Erreur : " + error.message;
-        msg.classList.replace("bg-blue-100", "bg-red-100");
-        msg.classList.add("text-red-800");
+        // C'est ici que l'erreur "Interdit" apparaîtra si le mot de passe est mauvais
+        msg.textContent = "❌ " + error.message;
+        msg.className = "mt-4 p-3 rounded text-center bg-red-100 text-red-800 font-bold";
       } else {
-        msg.textContent =
-          "✅ Recette envoyée ! Le site sera à jour dans 2-3 min.";
-        msg.classList.replace("bg-blue-100", "bg-green-100");
-        msg.classList.add("text-green-800", "border-2", "border-green-500");
+        msg.textContent = "✅ Recette publiée !";
+        msg.className = "mt-4 p-3 rounded text-center bg-green-100 text-green-800 font-bold";
         form.reset();
       }
     }

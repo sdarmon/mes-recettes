@@ -27,15 +27,18 @@ export const server = {
       return comment[0];
     },
   }),
-  // src/actions/index.ts
+
+  
   addRecipe: defineAction({
     accept: "form",
     input: z.object({
       adminKey: z.string(),
-      author: z.string().min(1), // <--- Nouveau champ
+      author: z.string().min(1),
       title: z.string().min(5),
       description: z.string().min(10),
       tags: z.string(),
+      personnes: z.coerce.number(), // On force la conversion en nombre
+      unite: z.string(), // "personnes", "pizzas", "pâtes", etc.
       content: z.string().min(20),
     }),
     handler: async input => {
@@ -51,13 +54,14 @@ export const server = {
         .replace(/-+/g, "-")
         .trim();
 
-      // On utilise input.author ici au lieu de la valeur fixe
       const mdxContent = `---
   author: "${input.author.replace(/"/g, "'")}"
   pubDatetime: ${new Date().toISOString()}
   title: "${input.title.replace(/"/g, "'")}"
   featured: false
   draft: false
+  personnes: ${input.personnes}
+  unite: "${input.unite.replace(/"/g, "'")}"
   tags:
   ${input.tags
     .split(",")
@@ -80,7 +84,7 @@ export const server = {
             "User-Agent": "Astro-App",
           },
           body: JSON.stringify({
-            message: `Nouvelle recette : ${input.title} par ${input.author}`,
+            message: `Nouvelle recette : ${input.title}`,
             content: Buffer.from(mdxContent).toString("base64"),
           }),
         }
