@@ -28,7 +28,7 @@ export const server = {
     },
   }),
 
-  
+
   addRecipe: defineAction({
     accept: "form",
     input: z.object({
@@ -72,7 +72,7 @@ export const server = {
 
   ${input.content}`;
 
-      const path = `src/content/blog/${slug}.mdx`;
+      const path = `src/data/blog/fan/${slug}.mdx`;
 
       const response = await fetch(
         `https://api.github.com/repos/${process.env.GITHUB_REPO}/contents/${path}`,
