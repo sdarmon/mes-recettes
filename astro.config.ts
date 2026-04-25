@@ -70,6 +70,6 @@ export default defineConfig({
       }),
     },
   },
-
+  output: "static",
   adapter: netlify(),
 });
