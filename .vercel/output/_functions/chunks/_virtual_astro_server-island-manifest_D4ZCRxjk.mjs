@@ -1,5 +1,5 @@
 const serverIslandMap = new Map([
-	["CommentsList", () => import("../chunks/CommentsList_DdbD06vV.mjs")],
+	["CommentsList", () => import("../chunks/CommentsList_R0lqbq5R.mjs")],
 ]);
 
 const serverIslandNameMap = new Map([

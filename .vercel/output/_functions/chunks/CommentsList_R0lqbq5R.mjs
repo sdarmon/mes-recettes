@@ -2,7 +2,7 @@ import { c as createComponent } from './astro-component_BAGjd9GD.mjs';
 import 'piccolore';
 import { m as maybeRenderHead, r as renderTemplate } from './transition_BZGvYEBH.mjs';
 import 'clsx';
-import { d as db, C as Comment } from './_astro_db_3ZfROtLd.mjs';
+import { d as db, C as Comment } from './_astro_db_DFIv_fb9.mjs';
 import { eq, desc } from '@astrojs/db/dist/runtime/virtual.js';
 
 const $$CommentsList = createComponent(async ($$result, $$props, $$slots) => {

@@ -4,7 +4,7 @@
   "version": "5.5.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build --remote && pagefind --site dist && cp -r dist/pagefind public/",
+    "build": "astro build --remote",
     "preview": "astro preview",
     "sync": "astro sync",
     "astro": "astro",
@@ -56,6 +56,6 @@
     "drizzle-orm": "0.45.2"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=20.0.0"
   }
 }

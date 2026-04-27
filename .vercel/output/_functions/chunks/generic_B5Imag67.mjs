@@ -1,4 +1,4 @@
-import { t as typeHandlers, a as types, i as isRemoteAllowed, j as joinPaths, b as isRemotePath, s as spreadAttributes, r as renderComponent } from './entrypoint_LBn8g3eo.mjs';
+import { t as typeHandlers, a as types, i as isRemoteAllowed, j as joinPaths, b as isRemotePath, s as spreadAttributes, r as renderComponent } from './entrypoint_D5fI7YE3.mjs';
 import { A as AstroError, ap as NoImageMetadata, aq as FailedToFetchRemoteImageDimensions, ar as RemoteImageNotAllowed, as as ExpectedImage, at as LocalImageUsedWrongly, au as MissingImageDimension, av as UnsupportedImageFormat, aw as IncompatibleDescriptorOptions, ax as UnsupportedImageConversion, ay as InvalidImageService, az as ExpectedImageOptions, aA as ExpectedNotESMImage, aB as ImageMissingAlt, m as maybeRenderHead, V as addAttribute, r as renderTemplate, aC as FontFamilyNotFound, aD as unescapeHTML } from './transition_BZGvYEBH.mjs';
 import { c as createComponent } from './astro-component_BAGjd9GD.mjs';
 import 'piccolore';
@@ -525,7 +525,7 @@ async function getConfiguredImageService() {
   if (!globalThis?.astroAsset?.imageService) {
     const { default: service } = await import(
       // @ts-expect-error
-      './sharp_D5_gs0-R.mjs'
+      './sharp_C3dFxHFa.mjs'
     ).catch((e) => {
       const error = new AstroError(InvalidImageService);
       error.cause = e;
