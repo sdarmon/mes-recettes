@@ -15,6 +15,7 @@
   "dependencies": {
     "@astrojs/db": "^0.20.1",
     "@astrojs/mdx": "^5.0.4",
+    "@astrojs/netlify": "^7.0.8",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.2",
     "@fontsource/exo-2": "^5.2.8",
