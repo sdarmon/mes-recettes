@@ -15,7 +15,7 @@ import { SITE } from "./src/config";
 
 import db from "@astrojs/db";
 
-import netlify from "@astrojs/netlify";
+import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
@@ -71,5 +71,5 @@ export default defineConfig({
     },
   },
   output: "static",
-  adapter: netlify(),
+  adapter: vercel(),
 });
