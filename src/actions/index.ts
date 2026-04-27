@@ -12,7 +12,8 @@ export const server = {
       message: z.string().min(1, "Le message ne peut pas être vide"),
     }),
     handler: async input => {
-      // On ne mentionne PAS 'id' ici, la DB s'en occupe
+      // Astro DB gère automatiquement la connexion Turso en prod
+      // si les variables ASTRO_DB_REMOTE_URL et ASTRO_DB_APP_TOKEN sont présentes
       const comment = await db
         .insert(Comment)
         .values({
@@ -41,8 +42,17 @@ export const server = {
       content: z.string().min(20),
     }),
     handler: async input => {
-      if (input.adminKey !== process.env.ADMIN_SECRET_KEY) {
-        throw new Error("Interdit");
+      // Utilisation de import.meta.env (recommandé pour Astro)
+      // ou process.env (fonctionne sur Vercel)
+      const ADMIN_KEY =
+        import.meta.env.ADMIN_SECRET_KEY || process.env.ADMIN_SECRET_KEY;
+      const GITHUB_TOKEN =
+        import.meta.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN;
+      const GITHUB_REPO =
+        import.meta.env.GITHUB_REPO || process.env.GITHUB_REPO;
+
+      if (input.adminKey !== ADMIN_KEY) {
+        throw new Error("Clé d'administration invalide");
       }
 
       const slug = input.title
@@ -53,7 +63,6 @@ export const server = {
         .replace(/-+/g, "-")
         .trim();
 
-      // IMPORTANT : Pas d'espaces au début des lignes dans le template literal
       const mdxContent = `---
 author: "${input.author.replace(/"/g, "'")}"
 pubDatetime: ${new Date().toISOString()}
@@ -70,16 +79,17 @@ ${input.tags
 description: "${input.description.replace(/"/g, "'")}"
 ---
 
-  ${input.content}`;
+${input.content}`;
 
       const path = `src/data/blog/fan/${slug}.mdx`;
 
+      // API GitHub pour pousser le fichier
       const response = await fetch(
-        `https://api.github.com/repos/${process.env.GITHUB_REPO}/contents/${path}`,
+        `https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`,
         {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            Authorization: `Bearer ${GITHUB_TOKEN}`,
             "Content-Type": "application/json",
             "User-Agent": "Astro-App",
           },
@@ -91,14 +101,11 @@ description: "${input.description.replace(/"/g, "'")}"
       );
 
       if (!response.ok) {
-        // On récupère le vrai message d'erreur de GitHub
         const errorData = await response.json();
-        throw new Error(
-          `GitHub dit : ${errorData.message} (Code: ${response.status})`
-        );
+        throw new Error(`Erreur GitHub: ${errorData.message}`);
       }
 
-      return { success: true };
+      return { success: true, slug };
     },
   }),
 };
