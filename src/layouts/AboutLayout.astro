@@ -72,6 +72,7 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
             <input
               type="number"
               name="personnes"
+              placeholder="4"
               class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
               required
             />
@@ -81,6 +82,7 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
             <input
               type="text"
               name="unite"
+              placeholder="personnes, parts, etc."
               class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
               required
             />
@@ -99,6 +101,7 @@ const recipeTemplate = `Utilisez la balise <C v="NOMBRE" /> pour les quantités 
           <label class="font-bold">Tags :</label>
           <textarea
             name="tags"
+            placeholder="Séparez les tags par des virgules, ex : dessert, rapide, vegan"
             class="rounded border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
             required></textarea>
         </div>
